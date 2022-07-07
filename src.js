@@ -1,3 +1,34 @@
+//Background
+let imageArray = ['assets/bg/bg2.jpg', 'assets/bg/bg4.jpg'];
+const nextButton = document.querySelector('.slider-next');
+const prevButton = document.querySelector('.slider-prev');
+const NUMBER_OF_IMG = 7;
+var iterator = getRandomInt(NUMBER_OF_IMG);
+function getRandomInt(max){
+    return Math.floor(Math.random() * max) + 1;
+}
+function getSlideNext(){
+    iterator += 1;
+    iterator %= NUMBER_OF_IMG + 1;
+    if(iterator == 0)
+        iterator = 1;
+    setBg();
+}
+function getSlidePrev(){
+    iterator -= 1;
+    if(iterator == 0)
+        iterator = NUMBER_OF_IMG;
+    setBg();
+}
+const body = document.body;
+function setBg(){
+    body.style.backgroundImage = `url("assets/bg/bg${iterator}.jpg")`;
+    body.style.transition = '2.5s';
+}
+nextButton.addEventListener('click', getSlideNext);
+prevButton.addEventListener('click', getSlidePrev);
+document.addEventListener('DOMContentLoaded', setBg);
+
 
 //Watch//
 function showTime(){
@@ -35,15 +66,22 @@ function showGreeting(){
 }
 showGreeting();
 
+//Local Storage
+
 const _name = document.querySelector('.name');
+const city = document.querySelector('.city');
 function setLocalStorage(){
     localStorage.setItem('_name', _name.value);
+    localStorage.setItem('city', city.value);
 }
 window.addEventListener('beforeunload', setLocalStorage);
 
 function getLocalStorage(){
     if(localStorage.getItem('_name')){
         _name.value = localStorage.getItem('_name');
+    }
+    if(localStorage.getItem('city')){
+        city.value = localStorage.getItem('city');
     }
 }
 window.addEventListener('load', getLocalStorage);
@@ -53,56 +91,51 @@ window.addEventListener('load', getLocalStorage);
 const weatherIcon = document.querySelector('.weather-icon');
 const temperature = document.querySelector('.temperature');
 const weatherDescription = document.querySelector('.weather-description');
-const city = document.querySelector('.city');
+
 const wind = document.querySelector('.wind');
 const humidity = document.querySelector('.humidity');
 
+var CITY_FIELD_EMPTY = -1;
+var UNKNOWN_CITY_NAME = -2;
 async function getWeather(){
-    if(!city.value) {
-        city.value = 'Minsk';
+    try{
+        if(!city.value)
+            throw CITY_FIELD_EMPTY;
+        const url = `https://api.openweathermap.org/data/2.5/weather?q=${city.value}&lang=en&appid=00ff01a303438bd46bbf6089de899381&units=metric`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if(data.cod >= 400)
+            throw UNKNOWN_CITY_NAME;
+        weatherIcon.className = 'weather-icon owf';
+        weatherIcon.classList.add(`owf-${data.weather[0].id}`);
+        weatherIcon.style.opacity = 1;
+        temperature.textContent = `${data.main.temp.toFixed(0)}°C`;
+        weatherDescription.textContent = data.weather[0].description;
+        wind.textContent = `Wind speed ${data.wind.speed.toFixed(0)} m/s`;
+        humidity.textContent = `Humidity: ${data.main.humidity}%`;
     }
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city.value}&lang=en&appid=00ff01a303438bd46bbf6089de899381&units=metric`;
-    const res = await fetch(url);
-    const data = await res.json();
-    weatherIcon.className = 'weather-icon owf';
-    weatherIcon.classList.add(`owf-${data.weather[0].id}`);
-    temperature.textContent = `${data.main.temp.toFixed(0)}°C`;
-    weatherDescription.textContent = data.weather[0].description;
-    wind.textContent = `Wind speed ${data.wind.speed.toFixed(0)} m/s`;
-    humidity.textContent = `Humidity: ${data.main.humidity}%`;
+    catch(e){
+        if(e == UNKNOWN_CITY_NAME){
+            weatherDescription.textContent = `Error!! City {${city.value}} was not found`;
+            temperature.textContent = '';
+            wind.textContent = '';
+            humidity.textContent = '';
+            weatherIcon.style.opacity = 0;
+        }
+    }
 }
 
 function setCity(event){
     if(event.code == 'Enter'){
         getWeather();
-        
     }
 }
 
 document.addEventListener('DOMContentLoaded', getWeather);
+window.addEventListener('load', getWeather);
 city.addEventListener('keypress', setCity);
 
-//Image slider//
-const nextButton = document.querySelector('.slider-next');
-const prevButton = document.querySelector('.slider-prev');
-let imageArray = ['assets/bg/bg2-2.jpg', 'assets/bg/bg-2.jpg'];
-var iterator = 0;
 
-function getSlideNext(){
-    iterator += 1;
-    iterator %= 2;
-    setBg();
-}
-function getSlidePrev(){
-    iterator -= 1;
-    if(iterator === -1)
-        iterator = imageArray.length - 1;
-    setBg();
-}
-const body = document.body;
-function setBg(){
-    body.style.backgroundImage = `url("${imageArray[iterator]}")`;
-    body.style.transition = '2.5s';
-}
-nextButton.addEventListener('click', getSlideNext);
-prevButton.addEventListener('click', getSlidePrev);
+
+
+
