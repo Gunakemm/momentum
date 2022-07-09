@@ -17,7 +17,14 @@
     </head>
     <body>
         <header class="header">
-            <div class="player"></div>
+            <div class="player">
+                <div class="player-buttons">
+                    <button class="player-prev player-icon"></button>
+                    <button class="play player-icon"></button>
+                    <button class="player-next player-icon"></button>
+                </div>
+                <input class="range" type="range" min="0" max="100" value="50">
+            </div>
             <div class="weather">
                 <input type="text" class="city" placeholder="[Enter city]">
                 <i class="weather-icon owf"></i>

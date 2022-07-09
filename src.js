@@ -1,33 +1,118 @@
+
 //Background
-let imageArray = ['assets/bg/bg2.jpg', 'assets/bg/bg4.jpg'];
 const nextButton = document.querySelector('.slider-next');
 const prevButton = document.querySelector('.slider-prev');
-const NUMBER_OF_IMG = 7;
+const NUMBER_OF_IMG = 13;
 var iterator = getRandomInt(NUMBER_OF_IMG);
 function getRandomInt(max){
     return Math.floor(Math.random() * max) + 1;
 }
+var freeze_check = true;
 function getSlideNext(){
-    iterator += 1;
-    iterator %= NUMBER_OF_IMG + 1;
-    if(iterator == 0)
-        iterator = 1;
-    setBg();
+    if(freeze_check == true){
+        iterator += 1;
+        iterator %= NUMBER_OF_IMG + 1;
+        if(iterator == 0)
+            iterator = 1;
+        setBg();
+    }
 }
 function getSlidePrev(){
-    iterator -= 1;
-    if(iterator == 0)
-        iterator = NUMBER_OF_IMG;
-    setBg();
+    if(freeze_check == true){
+        iterator -= 1;
+        if(iterator == 0)
+            iterator = NUMBER_OF_IMG;
+        setBg();
+    }
 }
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
 const body = document.body;
 function setBg(){
-    body.style.backgroundImage = `url("assets/bg/bg${iterator}.jpg")`;
-    body.style.transition = '2.5s';
+    if(freeze_check == true){
+        freeze_check = false;
+        body.style.backgroundImage = `url("assets/bg/bg${iterator}.jpg")`;
+        setTimeout(() => {freeze_check = true}, 2000);
+    }
 }
 nextButton.addEventListener('click', getSlideNext);
 prevButton.addEventListener('click', getSlidePrev);
 document.addEventListener('DOMContentLoaded', setBg);
+
+
+
+//Audio//
+
+const playList = [
+    {
+        title: 'Девочка не плачь',
+        src: '/assets/music/egor_krid.mp3',
+        duration: '02:57'
+    },
+    {
+        title: 'Девочка с картинки',
+        src: '/assets/music/Egor_Krid_-_Devochka_s_kartinki.mp3',
+        duration: '02:27'
+    }
+]
+
+const audio = new Audio();
+const playButton = document.querySelector('.play');
+const prevSongButton = document.querySelector('.player-prev');
+const nextSongButton = document.querySelector('.player-next');
+var songIterator = 0;
+audio.currentTime = 0;
+audio.src = playList[0].src;
+audio.volume = parseInt(document.querySelector('.range').value) / 100;
+let isPlay = false;
+function playAudio(){
+    if(isPlay){
+        isPlay = false;
+        audio.pause();
+    }
+    else if(!isPlay){ 
+        isPlay = true;
+        audio.play();
+    }
+    playButton.classList.toggle('pause');
+}
+function nextSong(){
+    songIterator += 1;
+    songIterator %= 2;
+    audio.src = playList[songIterator].src;
+    audio.currentTime = 0;
+    if(isPlay){
+        audio.pause();
+        playButton.classList.add('pause');
+        audio.play();
+    }
+}
+function prevSong(){
+    songIterator -= 1;
+    if(songIterator == -1) songIterator = 1;
+    audio.src = playList[songIterator].src;
+    audio.currentTime = 0;
+    if(isPlay){
+        audio.pause();
+        playButton.classList.add('pause');
+        audio.play();
+    }
+}
+function songEnd(){
+        nextSong();
+        audio.play();
+}
+const volumeInput = document.querySelector('.range');
+function setVolume() {
+    audio.volume = parseInt(volumeInput.value) / 100;
+}
+
+audio.addEventListener('ended', songEnd);
+volumeInput.addEventListener('click', setVolume);
+playButton.addEventListener('click', playAudio);
+nextSongButton.addEventListener('click', nextSong);
+prevSongButton.addEventListener('click', prevSong);
 
 
 //Watch//
@@ -134,8 +219,3 @@ function setCity(event){
 document.addEventListener('DOMContentLoaded', getWeather);
 window.addEventListener('load', getWeather);
 city.addEventListener('keypress', setCity);
-
-
-
-
-
