@@ -104,10 +104,22 @@ function songEnd(){
         audio.play();
 }
 const volumeInput = document.querySelector('.range');
+let down = false;
 function setVolume() {
     audio.volume = parseInt(volumeInput.value) / 100;
 }
 
+
+volumeInput.addEventListener('mousedown', () => {
+    down = true;
+});
+volumeInput.addEventListener('mousemove', () => {
+    if(!down) return;
+    setVolume();
+})
+volumeInput.addEventListener('mouseup', () => {
+    down = false;
+})
 audio.addEventListener('ended', songEnd);
 volumeInput.addEventListener('click', setVolume);
 playButton.addEventListener('click', playAudio);
